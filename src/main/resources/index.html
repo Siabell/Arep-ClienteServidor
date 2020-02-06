@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="js/app.js"></script>
+    <title>Calculator</title>
+</head>
+<body>
+    <form>
+        <div class="container">
+            <br><br>
+            <h3>Mean and Standard Deviation Calculator</h3>
+            Please provide numbers separated by comma to calculate. <br><br>
+            <input id="data" type="text" name="data"><br><br>
+            <input id="btnMostrar" type="button" onclick="app.calculate()" value="Calculate">
+            <br><br><output id="mean">Mean: </output>
+            <br><output id="standDev">Standard Deviation: </output>
+        </div>
+    </form>
+</body>
+</html>
