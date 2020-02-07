@@ -16,7 +16,7 @@ public class HttpServer {
 	static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
     static final String METHOD_NOT_SUPPORTED = "notSupported.html";
-    static final int PORT = 36000;
+    static final int PORT = 3000;
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
