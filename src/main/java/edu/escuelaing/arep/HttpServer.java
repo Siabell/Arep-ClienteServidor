@@ -1,4 +1,4 @@
-package edu.escuelaing.arep.reto1;
+package edu.escuelaing.arep;
 
 import java.net.*;
 import java.nio.ByteBuffer;
