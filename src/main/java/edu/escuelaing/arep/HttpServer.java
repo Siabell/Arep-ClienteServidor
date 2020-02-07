@@ -20,18 +20,18 @@ public class HttpServer {
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
+    	int PORT = getPort();
+    	ServerSocket serverSocket= null;
+    	try {
+			serverSocket= new ServerSocket(PORT);
+			System.out.println("Server started, listening on port: "+PORT);
+
+		} catch (Exception e) {
+			System.err.println("Could not listen on port: 35000.");
+		}
     	
     	try {
-    		int PORT = getPort();
-			ServerSocket serverSocket= null;
-			try {
-				serverSocket= new ServerSocket(PORT);
-				System.out.println("Server started, listening on port: "+PORT);
-
-			} catch (Exception e) {
-				System.err.println("Could not listen on port: 35000.");
-			}
-	       	
+    	
 	       	PrintWriter out =null;
 	    	BufferedReader in =null;
 	    	BufferedOutputStream outputLine = null;
@@ -82,15 +82,11 @@ public class HttpServer {
 			 				} else {
 			 					System.out.println("si existe el archuivo "+fileReq);
 			 					String contentMimeType = defineContentType(fileReq);
-			 					//implementar si no se encuentra
 			 					sendResponse(out,file,contentMimeType,outputLine,"200 ok");
 			 				}
 			 			}
 	    			 } else {
 	    				 //metodo no permitido
-	    				 if (fileReq.endsWith("/")) {
-	    						fileReq += DEFAULT_FILE;
-	    					}
 	    				 File file = new File(WEB_ROOT,METHOD_NOT_SUPPORTED);
 	    				 sendResponse(out,file,"text/html",outputLine,"405 METHOD_NOT_ALLOWED");
 	    			 }	       			
@@ -101,7 +97,6 @@ public class HttpServer {
 				} finally {
 					out.close();
 					in.close();
-					outputLine.close();
 					clientSocket.close();
 				}
 	       		
