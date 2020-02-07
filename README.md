@@ -64,3 +64,4 @@ See also the list of [contributors](https://github.com/Siabell/AREP-lab1-introdu
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
 
+[![CircleCI](https://circleci.com/gh/Siabell/Arep-ClienteServidor.svg?style=svg)](https://circleci.com/gh/Siabell/Arep-ClienteServidor)
