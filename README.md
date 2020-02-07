@@ -26,7 +26,7 @@ This command will generate the documentation in the folder
 To run the application in the heroku local web in windows, change the Profcile file to:
 
 ```
-web: java -cp target\classes;target\dependency\* edu.escuelaing.arep.SparkWebApp
+web: java -cp target\classes;target\dependency\* edu.escuelaing.arep.HttpServer
 ```
 and execute the following command on your console:
 
