@@ -112,9 +112,9 @@ public class HttpServer {
     }
     
     /**
-     * 
+     * Convierte un archivo a bytes
      * @param file
-     * @return
+     * @return un arreglo de bytes con la informacion del archivo
      * @throws IOException
      */
     private static byte[] fileDataByte (File file) throws IOException {
@@ -195,6 +195,10 @@ public class HttpServer {
     	return answer;
     }
     
+    /**
+     * Retorna el puerto por el que va a escuchar el servidor
+     * @return puerto por el que va a escuchar el servidor
+     */
     private static int getPort() {
         if (System.getenv("PORT") != null) {
             return Integer.parseInt(System.getenv("PORT"));
