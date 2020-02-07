@@ -1,6 +1,8 @@
 # AREP-ClienteServidor
 
-This application implements a web server created with java that supports multiple consecutive requests and returns the requested files (including html pages and images) 
+This application implements a web server created with java that supports multiple consecutive requests and returns the requested files including html pages and images. 
+
+[![CircleCI](https://circleci.com/gh/Siabell/Arep-ClienteServidor.svg?style=svg)](https://circleci.com/gh/Siabell/Arep-ClienteServidor)
 
 ## Getting Started
 
@@ -64,4 +66,4 @@ See also the list of [contributors](https://github.com/Siabell/AREP-lab1-introdu
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
 
-[![CircleCI](https://circleci.com/gh/Siabell/Arep-ClienteServidor.svg?style=svg)](https://circleci.com/gh/Siabell/Arep-ClienteServidor)
+
