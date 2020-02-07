@@ -16,20 +16,21 @@ public class HttpServer {
 	static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
     static final String METHOD_NOT_SUPPORTED = "notSupported.html";
-    static final int PORT = 3000;
+    //static final int PORT = 3000;
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
     	
     	try {
-			
-    		ServerSocket serverSocket= null;
-	       	try {
-	       		 serverSocket= new ServerSocket(PORT);
-	       		 System.out.println("Server started, listening on port: "+PORT);
-	   		} catch (Exception e) {
-	   			System.err.println("Could not listen on port: 35000.");
-	   		}
+    		int PORT = getPort();
+			ServerSocket serverSocket= null;
+			try {
+				serverSocket= new ServerSocket(PORT);
+				System.out.println("Server started, listening on port: "+PORT);
+
+			} catch (Exception e) {
+				System.err.println("Could not listen on port: 35000.");
+			}
 	       	
 	       	PrintWriter out =null;
 	    	BufferedReader in =null;
@@ -113,6 +114,12 @@ public class HttpServer {
     
     }
     
+    /**
+     * 
+     * @param file
+     * @return
+     * @throws IOException
+     */
     private static byte[] fileDataByte (File file) throws IOException {
 		FileInputStream fileIn = null;
 		byte[] fileData = new byte[(int) file.length()];
@@ -128,6 +135,14 @@ public class HttpServer {
 		return fileData;
 	}
     
+    /**
+     * Envia la respuesta al cliente
+     * @param out
+     * @param file
+     * @param contentType
+     * @param outputLine
+     * @param answer
+     */
     private static void sendResponse (PrintWriter out,File file, String contentType,BufferedOutputStream outputLine, String answer ) {
     	out.println("HTTP/1.1 "+ answer);
 		out.println("Server: Java HTTP Server  : 1.0");
@@ -161,6 +176,11 @@ public class HttpServer {
 
     }
  
+    /**
+     * Define cual es el tipo de contenido
+     * @param fileReq
+     * @return tipo de contenido
+     */
     private static String defineContentType(String fileReq ) {
     	String answer = null;
     	if (fileReq.endsWith(".htm")  ) {
@@ -175,12 +195,15 @@ public class HttpServer {
     	else {
     		answer = "text/html";
     	}
-    	//System.out.println("la respuesta es :  "+fileReq);
-    	//System.out.println("la termina es :  "+fileReq.endsWith(".html"));
-    	//System.out.println("la respuesta es :  "+answer);
     	return answer;
     }
     
+    private static int getPort() {
+        if (System.getenv("PORT") != null) {
+            return Integer.parseInt(System.getenv("PORT"));
+        }
+        return 4567; //returns default port if heroku-port isn't set (i.e. on localhost)
+    }
     
     
 }
