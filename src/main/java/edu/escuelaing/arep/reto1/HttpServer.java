@@ -1,4 +1,5 @@
 package edu.escuelaing.arep.reto1;
+
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -14,79 +15,100 @@ public class HttpServer {
 	static final File WEB_ROOT = new File(System.getProperty("user.dir") + "/src/main/resources");
 	static final String DEFAULT_FILE = "index.html";
     static final String FILE_NOT_FOUND = "404.html";
+    static final String METHOD_NOT_SUPPORTED = "notSupported.html";
     static final int PORT = 36000;
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
     	
-    	ServerSocket serverSocket= null;
-    	 try {
-    		 serverSocket= new ServerSocket(PORT);
-    		 System.out.println("Server started, listening on port: "+PORT);
+    	try {
+			
+    		ServerSocket serverSocket= null;
+	       	try {
+	       		 serverSocket= new ServerSocket(PORT);
+	       		 System.out.println("Server started, listening on port: "+PORT);
+	   		} catch (Exception e) {
+	   			System.err.println("Could not listen on port: 35000.");
+	   		}
+	       	
+	       	PrintWriter out =null;
+	    	BufferedReader in =null;
+	    	BufferedOutputStream outputLine = null;
+	    	String fileReq = null;
+    		
+	       	while (true) {
+	       		try {
+	   				clientSocket = serverSocket.accept();
+	   				System.out.println("connected");
+	   			 } catch (IOException e) {
+	                System.out.println("Could not accept the connection to client.");
+	             }
+	       		try {
+	       			
+	       			//output stream to client
+	    			out = new PrintWriter(clientSocket.getOutputStream(), true);
+	    			//read characters from client via input stream on the socket
+	    			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	    			String inputLine;
+	    			outputLine = new BufferedOutputStream(clientSocket.getOutputStream());
+	    			//header http
+	    			inputLine = in.readLine();
+	    			StringTokenizer header = new StringTokenizer(inputLine);
+	    			String method = header.nextToken().toUpperCase();
+	    			while (inputLine != null) {
+	                    System.out.println("Received: " + inputLine);
+	                    if (!in.ready()) {
+	                        break;
+	                     }
+	                     inputLine = in.readLine();
+	                 }
+	    			//http method
+	    			 fileReq = header.nextToken().toLowerCase();
+	    			 
+	    			 //check Method
+	    			 if (method.equals("GET")) {
+	    				 System.out.println("es un get");
+	    				 if (fileReq.endsWith("/")) {
+	    					 System.out.println("por defecto");
+	    					 File file = new File(WEB_ROOT,DEFAULT_FILE);
+			 				 sendResponse(out,file,"text/html",outputLine,"200 ok");
+			 			}else {
+			 				File file = new File(WEB_ROOT,fileReq);
+			 				if (!file.exists()) {
+			 					System.out.println("no existe el archivo "+fileReq);
+			 					File fileNotFound = new File(WEB_ROOT,FILE_NOT_FOUND);
+				 				sendResponse(out,fileNotFound,"text/html",outputLine,"404 NOT_FOUND");
+			 				} else {
+			 					System.out.println("si existe el archuivo "+fileReq);
+			 					String contentMimeType = defineContentType(fileReq);
+			 					//implementar si no se encuentra
+			 					sendResponse(out,file,contentMimeType,outputLine,"200 ok");
+			 				}
+			 			}
+	    			 } else {
+	    				 //metodo no permitido
+	    				 if (fileReq.endsWith("/")) {
+	    						fileReq += DEFAULT_FILE;
+	    					}
+	    				 File file = new File(WEB_ROOT,METHOD_NOT_SUPPORTED);
+	    				 sendResponse(out,file,"text/html",outputLine,"405 METHOD_NOT_ALLOWED");
+	    			 }	       			
+					
+				} catch (Exception e) {
+					// TODO: handle exception
+					System.err.println("Server error : " + e.getMessage());
+				} finally {
+					out.close();
+					in.close();
+					outputLine.close();
+					clientSocket.close();
+				}
+	       		
+	       	}
+    		
+    		
 		} catch (Exception e) {
-			System.err.println("Could not listen on port: 35000.");
-			System.exit(1);
-		}
-    	
-    	 PrintWriter out =null;
-    	 BufferedReader in =null;
-    	 BufferedOutputStream outputLine = null;
-    	 String fileReq = null;
-    	 try {
-    		 while (true) {
-    			 clientSocket = serverSocket.accept();
-    			 System.out.println("connected");
-    			 //output stream to client
-    			  out = new PrintWriter(clientSocket.getOutputStream(), true);
-    			//read characters from client via input stream on the socket
-    			  in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-    			 String inputLine;
-    			  outputLine = new BufferedOutputStream(clientSocket.getOutputStream());
-    			 //header http
-    			 inputLine = in.readLine();
-    			 StringTokenizer header = new StringTokenizer(inputLine);
-    			 String method = header.nextToken().toUpperCase();
-    			 //http method
-    			 fileReq = header.nextToken().toLowerCase();
-    			 
-    			 //check Method
-    			 if (method.equals("GET")) {
-    				 /*
-    				 System.out.println("method");
-    				 File file = new File(WEB_ROOT,DEFAULT_FILE);
-    				 sendHeader(out,file,"text/html",outputLine,"200 ok");*/
-    				 if (fileReq.endsWith("/")) {
-    					 File file = new File(WEB_ROOT,DEFAULT_FILE);
-		 				 sendResponse(out,file,"text/html",outputLine,"200 ok");
-		 			}else {
-		 				File file = new File(WEB_ROOT,fileReq);
-		 				if (!file.exists()) {
-		 					//impelentar
-		 				} else {
-		 					
-		 					String contentMimeType = defineContentType(fileReq);
-		 					//implementar si no se encuentra
-		 					sendResponse(out,file,contentMimeType,outputLine,"200 ok");
-		 				}
-		 			}
-    			 } else {
-    				 //metodo no permitido
-    				 if (fileReq.endsWith("/")) {
-    						fileReq += DEFAULT_FILE;
-    					}
-    				 File file = new File(WEB_ROOT,DEFAULT_FILE);
-    				 sendResponse(out,file,"text/html",outputLine,"200 ok");
-    			 }
-    		 }
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.err.println("Server error : " + e);
-		} finally {
-			out.close();
-			in.close();
-			outputLine.close();
-			clientSocket.close();
-			serverSocket.close();
+			System.err.println("Server Connection error : " + e.getMessage());
 		}
     
     }
@@ -116,14 +138,14 @@ public class HttpServer {
 		out.flush(); // flush character output stream buffer
 		// file
 		try {
+			System.out.println("si va--------------");
 			String[] type = contentType.split("/");
 			System.out.println(contentType);
-			if (contentType.equals("image/jpg") && contentType.equals("image/png") ) {
+			if (type[0].equals("image")  ) {
 				BufferedImage image = ImageIO.read(file);
 				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		        ImageIO.write(image, type[1], byteArrayOutputStream);
 		        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-		        outputLine.write(size);
 		        outputLine.write(byteArrayOutputStream.toByteArray());
 		        outputLine.flush();
 			}else {
@@ -151,11 +173,11 @@ public class HttpServer {
     		answer = "image/png";
     	}
     	else {
-    		answer = "text/plain";
+    		answer = "text/html";
     	}
-    	System.out.println("la respuesta es :  "+fileReq);
-    	System.out.println("la termina es :  "+fileReq.endsWith(".html"));
-    	System.out.println("la respuesta es :  "+answer);
+    	//System.out.println("la respuesta es :  "+fileReq);
+    	//System.out.println("la termina es :  "+fileReq.endsWith(".html"));
+    	//System.out.println("la respuesta es :  "+answer);
     	return answer;
     }
     
