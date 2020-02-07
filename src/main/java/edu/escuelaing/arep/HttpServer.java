@@ -40,6 +40,8 @@ public class HttpServer {
 	       	while (true) {
 	       		try {
 	   				clientSocket = serverSocket.accept();
+	   				clientSocket.setKeepAlive(true);
+	   				clientSocket.setTcpNoDelay(true);
 	   				System.out.println("connected");
 	   			 } catch (IOException e) {
 	                System.out.println("Could not accept the connection to client.");
@@ -97,7 +99,7 @@ public class HttpServer {
 				} finally {
 					out.close();
 					in.close();
-					clientSocket.close();
+					//clientSocket.close();
 				}
 	       		
 	       	}
