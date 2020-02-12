@@ -1,14 +1,21 @@
 package edu.escuelaing.arep;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.ServerSocket;
+import java.nio.ByteBuffer;
+import java.util.StringTokenizer;
+
+import javax.imageio.ImageIO;
+
 import java.net.*;
 
 public class HttpServerV {
 	
 	static final String DEFAULT_FILE = "index.html";
 	static final File WEB_ROOT = new File(System.getProperty("user.dir") + "/src/main/resources");
-
+	static final String FILE_NOT_FOUND = "404.html";
+    static final String METHOD_NOT_SUPPORTED = "notSupported.html";
 
 	
 	public static void main(String[] args) throws IOException {
@@ -24,6 +31,7 @@ public class HttpServerV {
 		PrintWriter out =null;
     	BufferedReader in =null;
     	String inputLine;
+    	String fileReq = null;
     	BufferedOutputStream outputLine = null;
 		Socket clientSocket = null;
 		
@@ -36,42 +44,97 @@ public class HttpServerV {
 			       System.exit(1);
 			   }
 			
-			
+
 	    	out = new PrintWriter(clientSocket.getOutputStream(), true);
 	    	in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	    	
+			int first = 0;
+			String[] header = null;
 	    	while ((inputLine = in.readLine()) != null) {
+	    		if (first == 0) {
+	    			header = inputLine.split(" ");
+	    			outputLine = new BufferedOutputStream(clientSocket.getOutputStream());
+	    	    	if (header[0].equals("GET")) {
+	    				 System.out.println("es un get");
+	    				 fileReq = header[1];
+	    				 if (header[1].equals("/")) {
+	    					 System.out.println("por defecto");
+	    					 File file = new File(WEB_ROOT,DEFAULT_FILE);
+	    	 				 sendResponse(out,file,"text/html",outputLine,"200 ok");
+	    				 }else {
+				 				File file = new File(WEB_ROOT,fileReq);
+				 				if (!file.exists()) {
+				 					System.out.println("no existe el archivo "+fileReq);
+				 					File fileNotFound = new File(WEB_ROOT,FILE_NOT_FOUND);
+					 				sendResponse(out,fileNotFound,"text/html",outputLine,"404 NOT_FOUND");
+				 				} else {
+				 					System.out.println("si existe el archuivo "+fileReq);
+				 					String contentMimeType = defineContentType(fileReq);
+				 					sendResponse(out,file,contentMimeType,outputLine,"200 ok");
+				 				}
+				 			}
+	    	    	} else {
+	    				 //metodo no permitido
+	    				 File file = new File(WEB_ROOT,METHOD_NOT_SUPPORTED);
+	    				 sendResponse(out,file,"text/html",outputLine,"405 METHOD_NOT_ALLOWED");
+	    			 }	       			
+	    	    	
+	    			first++;
+	    		  }
 			      System.out.println("Recibí: " + inputLine);
-			      
-			      if (in.ready()) {
-			    	   
-			      } else {
+			      header = inputLine.split(" ");
+			      if (!in.ready()) {
 			    	  break;
-			      }
+			      } 
 			}
-	    
 	    	
-	    	outputLine = new BufferedOutputStream(clientSocket.getOutputStream());
-	    	
-	    	out.print("HTTP/1.1 200 OK\r\n");
-			out.print("Server: Java HTTP Server  : 1.0\r\n");
-			out.print("Content-type: text/html\r\n");
-			out.print("\r\n");
-			out.flush();
-			File file = new File(WEB_ROOT,DEFAULT_FILE);
-			outputLine.write(fileDataByte(file), 0, (int) file.length());
-			outputLine.flush();
-			//System.out.println("texto");
-			    //out.println(outputLine);
 			out.close();
 			in.close(); 
 			clientSocket.close(); 
 		}
-
-		
-		 
 	
 	}
+	
+	/**
+     * Envia la respuesta al cliente
+     * @param out
+     * @param file
+     * @param contentType
+     * @param outputLine
+     * @param answer
+     */
+    private static void sendResponse (PrintWriter out,File file, String contentType,BufferedOutputStream outputLine, String answer ) {
+	
+    	out.print("HTTP/1.1 "+ answer+"\r\n");
+		out.print("Server: Java HTTP Server  : 1.0 \r\n");
+		out.print("Content-type: " + contentType+"\r\n");
+		out.print("\r\n"); // blank line between headers and content,
+		out.flush(); // flush character output stream buffer
+		// file
+		try {
+			System.out.println("si va--------------");
+			String[] type = contentType.split("/");
+			System.out.println(contentType);
+			if (type[0].equals("image")  ) {
+				BufferedImage image = ImageIO.read(file);
+				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		        ImageIO.write(image, type[1], byteArrayOutputStream);
+		        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+		        outputLine.write(byteArrayOutputStream.toByteArray());
+		        outputLine.flush();
+			}else {
+				System.out.println("texto");
+				outputLine.write(fileDataByte(file), 0, (int) file.length());
+				outputLine.flush();
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
+    }
+ 
 	
 	/**
      * Retorna el puerto por el que va a escuchar el servidor
@@ -105,6 +168,27 @@ public class HttpServerV {
 		return fileData;
 	}
     
+    /**
+     * Define cual es el tipo de contenido
+     * @param fileReq
+     * @return tipo de contenido
+     */
+    private static String defineContentType(String fileReq ) {
+    	String answer = null;
+    	if (fileReq.endsWith(".htm")  ) {
+    		answer = "text/html";
+    	} else if (fileReq.endsWith(".html")  ) {
+    		answer = "text/html";
+    	} else if (fileReq.endsWith(".jpg") ) {
+    		answer = "image/jpg";
+    	} else if (fileReq.endsWith(".png") ) {
+    		answer = "image/png";
+    	}
+    	else {
+    		answer = "text/html";
+    	}
+    	return answer;
+    }
     
     
 }
