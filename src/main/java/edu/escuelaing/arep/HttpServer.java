@@ -11,200 +11,49 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 public class HttpServer {
-
-	static final File WEB_ROOT = new File(System.getProperty("user.dir") + "/src/main/resources");
+	
 	static final String DEFAULT_FILE = "index.html";
-    static final String FILE_NOT_FOUND = "404.html";
-    static final String METHOD_NOT_SUPPORTED = "notSupported.html";
-    //static final int PORT = 3000;
-    private static Socket clientSocket;
+	static final File WEB_ROOT = new File(System.getProperty("user.dir") + "/src/main/resources");
 
-    public static void main(String[] args) throws IOException {
-    	int PORT = getPort();
-    	ServerSocket serverSocket= null;
-    	try {
-			serverSocket= new ServerSocket(PORT);
-			System.out.println("Server started, listening on port: "+PORT);
+	public static void main(String[] args) throws IOException {
+		   ServerSocket serverSocket = null;
+		   try { 
+		      serverSocket = new ServerSocket(36000);
+		   } catch (IOException e) {
+		      System.err.println("Could not listen on port: 35000.");
+		      System.exit(1);
+		   }
 
-		} catch (Exception e) {
-			System.err.println("Could not listen on port: 35000.");
-		}
-    	
-    	try {
-    	
-	       	PrintWriter out =null;
-	    	BufferedReader in =null;
-	    	BufferedOutputStream outputLine = null;
-	    	String fileReq = null;
-    		
-	       	while (true) {
-	       		try {
-	   				clientSocket = serverSocket.accept();
-	   				clientSocket.setKeepAlive(true);
-	   				clientSocket.setTcpNoDelay(true);
-	   				System.out.println("connected");
-	   			 } catch (IOException e) {
-	                System.out.println("Could not accept the connection to client.");
-	             }
-	       		try {
-	       			
-	       			//output stream to client
-	    			out = new PrintWriter(clientSocket.getOutputStream(), true);
-	    			//read characters from client via input stream on the socket
-	    			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	    			String inputLine;
-	    			outputLine = new BufferedOutputStream(clientSocket.getOutputStream());
-	    			//header http
-	    			inputLine = in.readLine();
-	    			StringTokenizer header = new StringTokenizer(inputLine);
-	    			String method = header.nextToken().toUpperCase();
-	    			while (inputLine != null) {
-	                    System.out.println("Received: " + inputLine);
-	                    if (!in.ready()) {
-	                        break;
-	                     }
-	                     inputLine = in.readLine();
-	                 }
-	    			//http method
-	    			 fileReq = header.nextToken().toLowerCase();
-	    			 
-	    			 //check Method
-	    			 if (method.equals("GET")) {
-	    				 System.out.println("es un get");
-	    				 if (fileReq.endsWith("/")) {
-	    					 System.out.println("por defecto");
-	    					 File file = new File(WEB_ROOT,DEFAULT_FILE);
-			 				 sendResponse(out,file,"text/html",outputLine,"200 ok");
-			 			}else {
-			 				File file = new File(WEB_ROOT,fileReq);
-			 				if (!file.exists()) {
-			 					System.out.println("no existe el archivo "+fileReq);
-			 					File fileNotFound = new File(WEB_ROOT,FILE_NOT_FOUND);
-				 				sendResponse(out,fileNotFound,"text/html",outputLine,"404 NOT_FOUND");
-			 				} else {
-			 					System.out.println("si existe el archuivo "+fileReq);
-			 					String contentMimeType = defineContentType(fileReq);
-			 					sendResponse(out,file,contentMimeType,outputLine,"200 ok");
-			 				}
-			 			}
-	    			 } else {
-	    				 //metodo no permitido
-	    				 File file = new File(WEB_ROOT,METHOD_NOT_SUPPORTED);
-	    				 sendResponse(out,file,"text/html",outputLine,"405 METHOD_NOT_ALLOWED");
-	    			 }	       			
-					
-				} catch (Exception e) {
-					// TODO: handle exception
-					System.err.println("Server error : " + e.getMessage());
-				} finally {
-					out.close();
-					in.close();
-					//clientSocket.close();
-				}
-	       		
-	       	}
-    		
-    		
-		} catch (Exception e) {
-			System.err.println("Server Connection error : " + e.getMessage());
-		}
-    
-    }
-    
-    /**
-     * Convierte un archivo a bytes
-     * @param file
-     * @return un arreglo de bytes con la informacion del archivo
-     * @throws IOException
-     */
-    private static byte[] fileDataByte (File file) throws IOException {
-		FileInputStream fileIn = null;
-		byte[] fileData = new byte[(int) file.length()];
-		
-		try {
-			fileIn = new FileInputStream(file);
-			fileIn.read(fileData);
-		} finally {
-			if (fileIn != null) 
-				fileIn.close();
-		}
-		
-		return fileData;
-	}
-    
-    /**
-     * Envia la respuesta al cliente
-     * @param out
-     * @param file
-     * @param contentType
-     * @param outputLine
-     * @param answer
-     */
-    private static void sendResponse (PrintWriter out,File file, String contentType,BufferedOutputStream outputLine, String answer ) {
-    	out.println("HTTP/1.1 "+ answer);
-		out.println("Server: Java HTTP Server  : 1.0");
-		out.println("Date: " + new Date());
-		out.println("Content-type: " + contentType);
-		out.println("Content-length: " + file.length());
-		out.println(); // blank line between headers and content,
-		out.flush(); // flush character output stream buffer
-		// file
-		try {
-			System.out.println("si va--------------");
-			String[] type = contentType.split("/");
-			System.out.println(contentType);
-			if (type[0].equals("image")  ) {
-				BufferedImage image = ImageIO.read(file);
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		        ImageIO.write(image, type[1], byteArrayOutputStream);
-		        byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
-		        outputLine.write(byteArrayOutputStream.toByteArray());
-		        outputLine.flush();
-			}else {
-				System.out.println("texto");
-				outputLine.write(fileDataByte(file), 0, (int) file.length());
-				outputLine.flush();
-			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-    }
- 
-    /**
-     * Define cual es el tipo de contenido
-     * @param fileReq
-     * @return tipo de contenido
-     */
-    private static String defineContentType(String fileReq ) {
-    	String answer = null;
-    	if (fileReq.endsWith(".htm")  ) {
-    		answer = "text/html";
-    	} else if (fileReq.endsWith(".html")  ) {
-    		answer = "text/html";
-    	} else if (fileReq.endsWith(".jpg") ) {
-    		answer = "image/jpg";
-    	} else if (fileReq.endsWith(".png") ) {
-    		answer = "image/png";
-    	}
-    	else {
-    		answer = "text/html";
-    	}
-    	return answer;
-    }
-    
-    /**
-     * Retorna el puerto por el que va a escuchar el servidor
-     * @return puerto por el que va a escuchar el servidor
-     */
-    private static int getPort() {
-        if (System.getenv("PORT") != null) {
-            return Integer.parseInt(System.getenv("PORT"));
-        }
-        return 4567; //returns default port if heroku-port isn't set (i.e. on localhost)
-    }
+		   Socket clientSocket = null;
+		   try {
+		       System.out.println("Listo para recibir ...");
+		       clientSocket = serverSocket.accept();
+		   } catch (IOException e) {
+		       System.err.println("Accept failed.");
+		       System.exit(1);
+		   }
+		   PrintWriter out = new PrintWriter(
+		                         clientSocket.getOutputStream(), true);
+		   BufferedReader in = new BufferedReader(
+		                         new InputStreamReader(clientSocket.getInputStream()));
+		   String inputLine, outputLine;
+		   while ((inputLine = in.readLine()) != null) {
+		      System.out.println("Recibí: " + inputLine);
+		      if (!in.ready()) {break; }
+		   }
+		   File fileNotFound = new File(WEB_ROOT,DEFAULT_FILE);
+		   outputLine = 
+				   "HTTP/1.1 200 OK\r\n"
+				+ "Access-Control-Allow-Origin: *\r\n"
+				+ "Content-Type: text/html\r\n"
+		         + "\r\n"
+				 + DEFAULT_FILE + inputLine;
+		    out.println(outputLine);
+		    out.close(); 
+		    in.close(); 
+		    clientSocket.close(); 
+		    serverSocket.close(); 
+		  }
     
     
 }
