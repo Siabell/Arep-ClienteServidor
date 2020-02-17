@@ -31,6 +31,12 @@ To run the project you can execute the command
 mvn exec:java -D "exec.mainClass"="edu.escuelaing.arep.HttpServerV"
 ```
 
+The application will be available in:
+
+```
+ http://localhost:4567/
+```
+
 To run the application in the heroku local web in windows, change the Profcile file to:
 
 ```
@@ -44,7 +50,7 @@ heroku local web
 The application will be available in:
 
 ```
- http://localhost:4567/
+ http://localhost:5000/
 ```
 
 
