@@ -25,10 +25,16 @@ This command will generate the documentation in the folder
  /target/site/apidocs/
  ```
 
+To run the project you can execute the command
+
+```
+mvn exec:java -D "exec.mainClass"="edu.escuelaing.arep.HttpClientV"
+```
+
 To run the application in the heroku local web in windows, change the Profcile file to:
 
 ```
-web: java -cp target\classes;target\dependency\* edu.escuelaing.arep.HttpServer
+web: java -cp target\classes;target\dependency\* edu.escuelaing.arep.HttpServerV
 ```
 and execute the following command on your console:
 
