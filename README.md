@@ -47,7 +47,9 @@ The application will be available in:
 
 You will need maven java installed on your machine to employ this program
 
+## Deployment
 
+[webServer](https://arepclienteservidor.herokuapp.com/) - heroku deploy
 
 ## Built With
 
