@@ -28,7 +28,7 @@ This command will generate the documentation in the folder
 To run the project you can execute the command
 
 ```
-mvn exec:java -D "exec.mainClass"="edu.escuelaing.arep.HttpClientV"
+mvn exec:java -D "exec.mainClass"="edu.escuelaing.arep.HttpServerV"
 ```
 
 To run the application in the heroku local web in windows, change the Profcile file to:
